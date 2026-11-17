@@ -1,0 +1,26 @@
+# Dependencias y archivos compilados
+node_modules
+dist
+dist-ssr
+
+# Los archivos .env SÍ se suben: el repositorio es privado y de uso interno del equipo.
+# Si algún día el repo se vuelve público, hay que volver a ignorarlos y cambiar las contraseñas.
+.env.local
+*.local
+
+# Llave de la versión anterior de Mongo local (ya no se usa)
+Secretos/
+
+# Respaldos de la base de datos
+respaldos/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor y sistema
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store

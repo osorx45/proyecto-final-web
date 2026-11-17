@@ -1,0 +1,5 @@
+pedido,cliente,producto,cantidad,piezas_por_caja,fecha
+1,cliente 1,azul,1000,50,12/05/2025
+1,cliente 1,roja,520,50,12/05/2025
+2,cliente 2,negra,300,25,13/05/2025
+3,cliente 2,azul,150,,14/05/2025

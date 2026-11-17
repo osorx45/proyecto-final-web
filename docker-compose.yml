@@ -1,0 +1,70 @@
+# ============================================================================
+# PRODUCCIÓN (máquina virtual EC2 de AWS). Se inicia con:
+#     docker compose up -d --build
+#
+# Contenedores:
+#   proxy    -> Nginx de entrada, reparte por subdominio (único puerto público)
+#   frontend -> Nginx con React ya compilado
+#   backend  -> API de Express
+# La base de datos NO está aquí: es MongoDB Atlas (servicio externo).
+# Los valores ${...} se leen del archivo .env de esta misma carpeta.
+# ============================================================================
+
+services:
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: bic-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
+      BACKEND_DOMAIN: ${BACKEND_DOMAIN}
+    volumes:
+      # La imagen de Nginx convierte los .template en configuración
+      # sustituyendo las variables de entorno.
+      - ./nginx/proxy.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - bic-network
+
+  frontend:
+    build:
+      context: ./Frontend
+      args:
+        VITE_API_URL: https://${BACKEND_DOMAIN}/api
+        VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY:-}
+        VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN:-}
+        VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+        VITE_FIREBASE_APP_ID: ${FIREBASE_APP_ID:-}
+    container_name: bic-frontend
+    restart: unless-stopped
+    networks:
+      - bic-network
+
+  backend:
+    build: ./Backend
+    container_name: bic-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      # CORS: solo el subdominio del Frontend puede llamar a la API.
+      CLIENT_URL: https://${FRONTEND_DOMAIN}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      ADMIN_NUMERO: ${ADMIN_NUMERO:-1}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+    volumes:
+      # Los respaldos diarios quedan guardados en la máquina virtual.
+      - ./respaldos:/app/respaldos
+    networks:
+      - bic-network
+
+networks:
+  bic-network:
+    driver: bridge

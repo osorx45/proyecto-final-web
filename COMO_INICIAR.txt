@@ -1,0 +1,50 @@
+COMO INICIAR EL SISTEMA BIC (en tu computadora)
+================================================
+
+Antes de empezar: abre Docker Desktop y espera a que diga que esta corriendo.
+
+
+TERMINAL 1 - Base de datos (MongoDB)
+------------------------------------
+cd "C:\trabajos 1lap\app web\proyecto final\app final"
+docker compose -f docker-compose.dev.yml up -d
+docker ps
+
+  -> Espera a que bic-mongodb diga "(healthy)" (unos 15 segundos).
+  -> Esta terminal ya la puedes cerrar; Mongo sigue corriendo en Docker.
+
+
+TERMINAL 2 - Backend (API)
+--------------------------
+cd "C:\trabajos 1lap\app web\proyecto final\app final\Backend"
+npm run dev
+
+  -> Debe decir: "Servidor BIC activo en puerto 3000."
+  -> No cierres esta terminal.
+
+
+TERMINAL 3 - Frontend (pantallas)
+---------------------------------
+cd "C:\trabajos 1lap\app web\proyecto final\app final\Frontend"
+npm run dev
+
+  -> No cierres esta terminal.
+  -> Abre en el navegador: http://localhost:5173
+  -> Entra con numero de empleado 1 y la contrasena de ADMIN_PASSWORD
+     (esta en Backend\.env).
+
+
+PARA APAGAR TODO
+----------------
+- En las terminales 2 y 3: Ctrl + C
+- La base de datos:
+    cd "C:\trabajos 1lap\app web\proyecto final\app final"
+    docker compose -f docker-compose.dev.yml stop
+  (Los datos se conservan. NO uses "down -v": eso borra la base de datos.)
+
+
+SOLO LA PRIMERA VEZ (o si alguien agrega librerias nuevas)
+----------------------------------------------------------
+En la carpeta Backend:   npm install
+                         npm run seed:admin     (crea el administrador)
+En la carpeta Frontend:  npm install

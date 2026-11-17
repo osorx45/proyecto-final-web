@@ -1,0 +1,56 @@
+# Nginx de entrada (proxy inverso). Recibe todo lo que llega al puerto 80 de
+# la máquina virtual y lo reparte según el subdominio:
+#   FRONTEND_DOMAIN -> contenedor "frontend"
+#   BACKEND_DOMAIN  -> contenedor "backend"
+# Los dominios se toman del archivo .env (Nginx sustituye ${...} al iniciar).
+
+# Cloudflare nos manda la IP real del visitante en el encabezado
+# CF-Connecting-IP. Si alguien entra sin pasar por Cloudflare, usamos su IP directa.
+map $http_cf_connecting_ip $ip_visitante {
+    ""      $remote_addr;
+    default $http_cf_connecting_ip;
+}
+
+# Cloudflare indica si el visitante usó https. Sin Cloudflare es http.
+map $http_x_forwarded_proto $protocolo {
+    ""      $scheme;
+    default $http_x_forwarded_proto;
+}
+
+# ---------- Subdominio del Frontend ----------
+server {
+    listen 80;
+    server_name ${FRONTEND_DOMAIN};
+
+    location / {
+        proxy_pass http://frontend:80;
+        proxy_set_header Host $host;
+    }
+}
+
+# ---------- Subdominio del Backend (API) ----------
+server {
+    listen 80;
+    server_name ${BACKEND_DOMAIN};
+
+    # Tamaño máximo del archivo de pedidos que se importa.
+    client_max_body_size 6m;
+
+    location / {
+        proxy_pass http://backend:3000;
+
+        # Encabezados que el Backend necesita conocer. Nginx NO agrega
+        # encabezados CORS: los pone Express (CLIENT_URL) y aquí solo se
+        # dejan pasar, para que no lleguen duplicados al navegador.
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $ip_visitante;
+        proxy_set_header X-Forwarded-Proto $protocolo;
+    }
+}
+
+# ---------- Cualquier otro nombre o la IP directa ----------
+server {
+    listen 80 default_server;
+    server_name _;
+    return 444; # cierra la conexión sin responder
+}

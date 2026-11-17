@@ -1,0 +1,55 @@
+# ============================================================================
+# DESARROLLO: MongoDB local en Docker para programar en tu computadora.
+#     docker compose -f docker-compose.dev.yml up -d
+# Usa MONGO_ROOT_PASSWORD y BIC_DB_PASSWORD del archivo .env.
+# Es un Mongo sencillo (sin replica set): al crearse por primera vez, la imagen
+# crea el usuario administrador y ejecuta database/init-mongo.js, que crea
+# el usuario "bic_app" de la aplicación.
+# En producción no se usa: la base de datos es MongoDB Atlas.
+# ============================================================================
+
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: bic-mongodb
+    restart: unless-stopped
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bic_admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      BIC_DB_PASSWORD: ${BIC_DB_PASSWORD}
+
+    ports:
+      - "127.0.0.1:27017:27017"
+
+    volumes:
+      - mongo_data:/data/db
+      - ./database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - -u
+        - bic_admin
+        - -p
+        - ${MONGO_ROOT_PASSWORD}
+        - --authenticationDatabase
+        - admin
+        - --eval
+        - db.adminCommand('ping')
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - bic-network
+
+volumes:
+  mongo_data:
+
+networks:
+  bic-network:
+    driver: bridge
+
