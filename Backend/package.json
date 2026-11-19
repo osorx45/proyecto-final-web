@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed:admin": "node src/utils/crearAdministrador.js",
-    "backup": "node src/utils/respaldar.js"
+    "seed:admin": "node src/utils/crearAdministrador.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

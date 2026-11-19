@@ -17,7 +17,6 @@ npm start                # producción
 | `npm run dev` | Inicia el servidor con nodemon |
 | `npm start` | Inicia el servidor |
 | `npm run seed:admin` | Crea el administrador con `ADMIN_NUMERO` y `ADMIN_PASSWORD` |
-| `npm run backup` | Respalda la base en `respaldos/<fecha>/` (archivos JSON) |
 
 ## Variables de entorno
 
@@ -42,7 +41,7 @@ src/
   routes/          Qué dirección llama a qué controlador y con qué rol
   controllers/     Reciben la petición, validan y responden
   services/        Reglas de etiquetas, generación de PDF y Excel
-  utils/           Formato de importación, fechas, scripts (admin y respaldo)
+  utils/           Formato de importación, fechas, script del administrador
 ```
 
 ## Rutas

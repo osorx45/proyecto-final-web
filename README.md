@@ -10,6 +10,7 @@ Sistema web para generar, guardar e imprimir etiquetas de producción por caja
 | `nginx/` | Configuración del proxy que reparte las peticiones por subdominio |
 | `database/`, `docker-compose.dev.yml` | MongoDB local en Docker para desarrollo |
 | `docker-compose.yml` | Despliegue de producción (proxy + frontend + backend) |
+| `docker-compose.local.yml` | Agrega MongoDB local para probar la producción en tu computadora |
 | `ejemplos/` | Archivo de pedidos de ejemplo para importar |
 
 ## Funciones
@@ -50,6 +51,15 @@ npm run dev                 # http://localhost:5173
 Entra con el número de empleado `1` y la contraseña de `ADMIN_PASSWORD`.
 Importa `ejemplos/pedidos_ejemplo.csv` en la pantalla Pedidos y crea un operador
 en Empleados para probar la generación de etiquetas.
+
+## Probar la versión de producción en tu computadora
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+```
+
+Abre `http://bic.localhost` (la API queda en `http://api.bic.localhost/api/health`).
+Usa los valores de prueba del `.env` de esta carpeta y el mismo MongoDB local de desarrollo.
 
 ## Desplegar en producción (AWS EC2 + Docker Compose)
 

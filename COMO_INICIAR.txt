@@ -43,6 +43,36 @@ PARA APAGAR TODO
   (Los datos se conservan. NO uses "down -v": eso borra la base de datos.)
 
 
+PRUEBA DE PRODUCCION EN TU COMPUTADORA (como quedara en AWS)
+-----------------------------------------------------------
+Levanta 4 contenedores: proxy (Nginx), frontend, backend y MongoDB.
+Usa la misma base de datos que el modo de desarrollo.
+
+1) Si tienes corriendo "npm run dev" en las terminales 2 y 3, detenlos (Ctrl + C).
+
+2) En una terminal:
+cd "C:\trabajos 1lap\app web\proyecto final\app final"
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+
+  -> La primera vez tarda varios minutos (descarga imagenes y compila React).
+  -> Revisa que todo este arriba:
+     docker compose -f docker-compose.yml -f docker-compose.local.yml ps
+     Deben aparecer bic-proxy, bic-frontend, bic-backend y bic-mongodb.
+
+3) Abre en el navegador:
+   http://bic.localhost                     (la aplicacion)
+   http://api.bic.localhost/api/health      (debe responder "correcto")
+
+Si algo falla, mira los mensajes del contenedor:
+   docker compose -f docker-compose.yml -f docker-compose.local.yml logs backend
+   (o proxy, o frontend)
+
+Despues de cambiar codigo, repite el comando del paso 2 (el --build reconstruye).
+
+Para apagarla:
+   docker compose -f docker-compose.yml -f docker-compose.local.yml stop
+
+
 SOLO LA PRIMERA VEZ (o si alguien agrega librerias nuevas)
 ----------------------------------------------------------
 En la carpeta Backend:   npm install

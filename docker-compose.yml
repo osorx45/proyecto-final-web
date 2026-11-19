@@ -8,6 +8,7 @@
 #   backend  -> API de Express
 # La base de datos NO está aquí: es MongoDB Atlas (servicio externo).
 # Los valores ${...} se leen del archivo .env de esta misma carpeta.
+# Para probarlo en tu computadora se agrega docker-compose.local.yml (ver COMO_INICIAR.txt).
 # ============================================================================
 
 services:
@@ -34,7 +35,7 @@ services:
     build:
       context: ./Frontend
       args:
-        VITE_API_URL: https://${BACKEND_DOMAIN}/api
+        VITE_API_URL: ${PROTOCOLO:-https}://${BACKEND_DOMAIN}/api
         VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY:-}
         VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN:-}
         VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
@@ -54,14 +55,11 @@ services:
       MONGO_URI: ${MONGO_URI}
       JWT_SECRET: ${JWT_SECRET}
       # CORS: solo el subdominio del Frontend puede llamar a la API.
-      CLIENT_URL: https://${FRONTEND_DOMAIN}
+      CLIENT_URL: ${PROTOCOLO:-https}://${FRONTEND_DOMAIN}
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
       ADMIN_NUMERO: ${ADMIN_NUMERO:-1}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
-    volumes:
-      # Los respaldos diarios quedan guardados en la máquina virtual.
-      - ./respaldos:/app/respaldos
     networks:
       - bic-network
 

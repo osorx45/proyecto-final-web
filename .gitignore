@@ -11,9 +11,6 @@ dist-ssr
 # Llave de la versión anterior de Mongo local (ya no se usa)
 Secretos/
 
-# Respaldos de la base de datos
-respaldos/
-
 # Logs
 logs
 *.log

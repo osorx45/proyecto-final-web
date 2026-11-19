@@ -1,0 +1,31 @@
+# ============================================================================
+# PRUEBA LOCAL DE PRODUCCIÓN: los mismos contenedores que en AWS, pero en tu
+# computadora y usando el MongoDB local en lugar de Atlas.
+#
+#     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+# Este archivo solo AGREGA cosas a docker-compose.yml:
+#   - el contenedor de MongoDB (el mismo de docker-compose.dev.yml, con los mismos datos)
+#   - la conexión del Backend a ese MongoDB
+# Abrir en el navegador: http://bic.localhost
+# En AWS NO se usa este archivo.
+# ============================================================================
+
+services:
+  # Reutilizamos la definición de Mongo de desarrollo para no repetirla.
+  mongodb:
+    extends:
+      file: docker-compose.dev.yml
+      service: mongodb
+
+  backend:
+    environment:
+      # Dentro de Docker, "mongodb" es el nombre del contenedor de la base.
+      MONGO_URI: mongodb://bic_app:${BIC_DB_PASSWORD}@mongodb:27017/bic_db?authSource=bic_db
+    # El Backend espera a que Mongo esté listo antes de arrancar.
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  mongo_data:
