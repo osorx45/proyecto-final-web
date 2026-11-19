@@ -9,6 +9,9 @@ const pedidoSchema = new mongoose.Schema({
 
     numeroPedido: { type: String, required: true, trim: true },
 
+    // Número del cliente según el archivo importado (columna id_cliente).
+    idCliente: { type: String, trim: true, default: "" },
+
     cliente: { type: String, required: true, trim: true },
 
     producto: { type: String, required: true, trim: true },

@@ -76,12 +76,13 @@ docker compose exec backend npm run seed:admin
 
 ## Formato del archivo de pedidos
 
-> **Provisional.** Se ajustará cuando se entregue la estructura oficial.
-> Todo lo relacionado está en `Backend/src/utils/formatoImportacion.js`.
+Formato oficial (Excel o CSV). Ejemplo completo en `ejemplos/pedidos_ejemplo.csv`.
 
-| pedido | cliente | producto | cantidad | piezas_por_caja | fecha |
-| --- | --- | --- | --- | --- | --- |
-| 1 | cliente 1 | azul | 1000 | 50 | 12/05/2025 |
+| id_pedido | id_cliente | cliente | producto | cantidad |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | Papelería El Lápiz | Azul | 150 |
 
-`piezas_por_caja` y `fecha` son opcionales (por defecto 50 piezas y la fecha de hoy).
-Las etiquetas necesarias se calculan como `cantidad ÷ piezas_por_caja` redondeado hacia arriba.
+Opcionalmente acepta las columnas `piezas_por_caja` (por defecto 50) y `fecha`
+(por defecto, el día en que se importa). Las etiquetas necesarias se calculan como
+`cantidad ÷ piezas_por_caja` redondeado hacia arriba. Todo lo relacionado con el
+formato está en `Backend/src/utils/formatoImportacion.js`.

@@ -1,37 +1,44 @@
 /*
   ============================================================================
-  NOTA: FORMATO PROVISIONAL DEL ARCHIVO DE PEDIDOS
+  FORMATO DEL ARCHIVO DE PEDIDOS (Excel o CSV)
   ----------------------------------------------------------------------------
-  El profesor todavía no entrega la estructura oficial del Excel/CSV.
-  Todo lo que depende de ese formato está en ESTE archivo. Cuando se conozca
-  la estructura real, normalmente solo habrá que cambiar el objeto COLUMNAS
-  (y, si las fechas vienen distinto, la función leerFecha).
+  Formato oficial entregado por el profesor:
+
+      id_pedido,id_cliente,cliente,producto,cantidad
+      1,1,Papelería El Lápiz,Azul,150
+
+  Columnas opcionales que el sistema también acepta si vienen:
+      piezas_por_caja  (si no viene se usan 50, ver config/constantes.js)
+      fecha            (si no viene se usa la fecha en que se importa)
+
+  Todo lo que depende del formato está en ESTE archivo.
   ============================================================================
 */
 
 const XLSX = require("xlsx");
 const { PIEZAS_POR_CAJA_DEFAULT } = require("../config/constantes");
 
-// NOTA (formato provisional): encabezados aceptados para cada dato.
-// Se comparan sin mayúsculas, acentos, espacios ni guiones.
+// Encabezados aceptados para cada dato. Se comparan sin mayúsculas,
+// acentos, espacios ni guiones: "id_pedido" se lee como "idpedido".
 const COLUMNAS = {
-    numeroPedido: ["pedido", "numeropedido", "numerodepedido", "nopedido"],
-    cliente: ["cliente"],
+    numeroPedido: ["idpedido", "pedido", "numeropedido", "numerodepedido", "nopedido"],
+    idCliente: ["idcliente", "numerocliente"],
+    cliente: ["cliente", "nombrecliente"],
     producto: ["producto", "color"],
     cantidad: ["cantidad", "piezas", "cantidadpiezas"],
     piezasPorCaja: ["piezasporcaja", "piezascaja", "pzasporcaja"],
     fecha: ["fecha", "fechapedido"]
 };
 
-// NOTA (formato provisional): columnas obligatorias. Las demás son opcionales.
+// Columnas obligatorias. Las demás son opcionales.
 const OBLIGATORIAS = ["numeroPedido", "cliente", "producto", "cantidad"];
 
-// NOTA (formato provisional): encabezados y ejemplo de la plantilla descargable.
+// Encabezados y ejemplo de la plantilla descargable (formato oficial).
 const PLANTILLA = [
-    ["pedido", "cliente", "producto", "cantidad", "piezas_por_caja", "fecha"],
-    ["1", "cliente 1", "azul", 1000, 50, "12/05/2025"],
-    ["1", "cliente 1", "roja", 520, 50, "12/05/2025"],
-    ["2", "cliente 2", "negra", 300, 25, "13/05/2025"]
+    ["id_pedido", "id_cliente", "cliente", "producto", "cantidad"],
+    [1, 1, "Papelería El Lápiz", "Azul", 150],
+    [2, 2, "Oficinas Ramírez SA", "Rojo", 400],
+    [3, 3, "Colegio Monteverde", "Negro", 750]
 ];
 
 // "Piezas por Caja" -> "piezasporcaja"
@@ -45,7 +52,7 @@ const leerEntero = (valor) => {
     return Number.isInteger(numero) && numero > 0 ? numero : null;
 };
 
-// NOTA (formato provisional): acepta fecha de Excel o texto "dd/mm/aaaa"
+// Acepta fecha de Excel o texto "dd/mm/aaaa"
 // (también "aaaa-mm-dd"). Se guarda a mediodía UTC para que el día no cambie
 // al mostrarse en el horario de México.
 const leerFecha = (valor) => {
@@ -67,8 +74,13 @@ const leerArchivoPedidos = (buffer, nombreArchivo) => {
     const esCsv = /\.csv$/i.test(nombreArchivo);
 
     // El CSV se lee como texto para respetar acentos y no alterar las fechas.
+    // Si se guardó desde Excel como "CSV (delimitado por comas)" puede venir en
+    // Windows-1252 en lugar de UTF-8: lo detectamos por los caracteres inválidos.
+    let texto = buffer.toString("utf8");
+    if (texto.includes("\uFFFD")) texto = buffer.toString("latin1");
+
     const libro = esCsv
-        ? XLSX.read(buffer.toString("utf8").replace(/^﻿/, ""), { type: "string", raw: true })
+        ? XLSX.read(texto.replace(/^\uFEFF/, ""), { type: "string", raw: true })
         : XLSX.read(buffer, { type: "buffer", cellDates: true });
 
     // Usamos la primera hoja. Cada renglón llega como arreglo de celdas.
@@ -102,8 +114,12 @@ const leerArchivoPedidos = (buffer, nombreArchivo) => {
         const fila = i + 2; // +2: la fila 1 es el encabezado
 
         const numeroPedido = String(celda(renglon, "numeroPedido")).trim();
+        const idCliente = String(celda(renglon, "idCliente")).trim();
         const cliente = String(celda(renglon, "cliente")).trim();
-        const producto = String(celda(renglon, "producto")).trim().toLowerCase();
+        // El producto se guarda como "Azul" aunque venga "AZUL" o "azul",
+        // para que el mismo color no aparezca dos veces.
+        const textoProducto = String(celda(renglon, "producto")).trim().toLowerCase();
+        const producto = textoProducto.charAt(0).toUpperCase() + textoProducto.slice(1);
         const cantidad = leerEntero(celda(renglon, "cantidad"));
 
         // Piezas por caja es opcional: si viene vacío se usa el valor por defecto.
@@ -123,6 +139,7 @@ const leerArchivoPedidos = (buffer, nombreArchivo) => {
         pedidos.push({
             fila,
             numeroPedido,
+            idCliente,
             cliente,
             producto,
             cantidad,

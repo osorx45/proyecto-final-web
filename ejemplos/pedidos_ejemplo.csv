@@ -1,5 +1,16 @@
-pedido,cliente,producto,cantidad,piezas_por_caja,fecha
-1,cliente 1,azul,1000,50,12/05/2025
-1,cliente 1,roja,520,50,12/05/2025
-2,cliente 2,negra,300,25,13/05/2025
-3,cliente 2,azul,150,,14/05/2025
+id_pedido,id_cliente,cliente,producto,cantidad
+1,1,Papelería El Lápiz,Azul,150
+2,2,Oficinas Ramírez SA,Rojo,400
+3,3,Colegio Monteverde,Negro,750
+4,1,Papelería El Lápiz,Rojo,50
+5,4,Distribuidora Vega,Negro,1000
+6,5,Librería Herrera,Azul,250
+7,2,Oficinas Ramírez SA,Azul,600
+8,6,Escuela Primaria Benito Juárez,Rojo,350
+9,7,Coworking Nodo,Negro,100
+10,3,Colegio Monteverde,Azul,900
+11,8,Papelería Flores,Rojo,200
+12,4,Distribuidora Vega,Azul,850
+13,9,Despacho Ruiz y Asociados,Negro,50
+14,10,Instituto Tecnológico del Valle,Negro,550
+15,5,Librería Herrera,Rojo,300
