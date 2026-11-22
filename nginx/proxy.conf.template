@@ -1,8 +1,11 @@
 # Nginx de entrada (proxy inverso). Recibe todo lo que llega al puerto 80 de
-# la máquina virtual y lo reparte según el subdominio:
-#   FRONTEND_DOMAIN -> contenedor "frontend"
-#   BACKEND_DOMAIN  -> contenedor "backend"
-# Los dominios se toman del archivo .env (Nginx sustituye ${...} al iniciar).
+# la máquina virtual y lo reparte por la RUTA:
+#   /api/...   -> contenedor "backend"
+#   todo lo demás -> contenedor "frontend"
+#
+# Funciona con dos subdominios (FRONTEND_DOMAIN y BACKEND_DOMAIN distintos)
+# o con uno solo (los dos iguales en el .env). Los dominios se toman del .env
+# (Nginx sustituye ${...} al iniciar).
 
 # Cloudflare nos manda la IP real del visitante en el encabezado
 # CF-Connecting-IP. Si alguien entra sin pasar por Cloudflare, usamos su IP directa.
@@ -17,26 +20,15 @@ map $http_x_forwarded_proto $protocolo {
     default $http_x_forwarded_proto;
 }
 
-# ---------- Subdominio del Frontend ----------
 server {
     listen 80;
-    server_name ${FRONTEND_DOMAIN};
-
-    location / {
-        proxy_pass http://frontend:80;
-        proxy_set_header Host $host;
-    }
-}
-
-# ---------- Subdominio del Backend (API) ----------
-server {
-    listen 80;
-    server_name ${BACKEND_DOMAIN};
+    server_name ${FRONTEND_DOMAIN} ${BACKEND_DOMAIN};
 
     # Tamaño máximo del archivo de pedidos que se importa.
     client_max_body_size 6m;
 
-    location / {
+    # ---------- API: Backend ----------
+    location /api/ {
         proxy_pass http://backend:3000;
 
         # Encabezados que el Backend necesita conocer. Nginx NO agrega
@@ -45,6 +37,12 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $ip_visitante;
         proxy_set_header X-Forwarded-Proto $protocolo;
+    }
+
+    # ---------- Pantallas: Frontend ----------
+    location / {
+        proxy_pass http://frontend:80;
+        proxy_set_header Host $host;
     }
 }
 
